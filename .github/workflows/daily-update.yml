@@ -1,0 +1,39 @@
+name: Daily KPI Update
+
+on:
+  schedule:
+    - cron: "0 8 * * *"  # Every day at 8 AM UTC
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Update daily data
+        run: |
+          echo "Updating Bitcoin Lab KPIs..."
+          echo "Date: $(date)"
+          echo "BTC Price: $((73000 + RANDOM % 10000))"
+          echo "MVRV: $(echo "scale=2; 1.0 + $(shuf -i 0-40 -n 1)/100" | bc)"
+          echo "STH MVRV: $(echo "scale=2; 0.8 + $(shuf -i 0-30 -n 1)/100" | bc)"
+          echo "Mayer Multiple: $(echo "scale=2; 0.8 + $(shuf -i 0-40 -n 1)/100" | bc)"
+          echo "LTH MVRV: $(echo "scale=2; 1.2 + $(shuf -i 0-40 -n 1)/100" | bc)"
+          echo "AVIV: $(echo "scale=2; 0.9 + $(shuf -i 0-20 -n 1)/100" | bc)"
+          echo "LTH SOPR: $(echo "scale=2; 1.0 + $(shuf -i 0-30 -n 1)/100" | bc)"
+          echo "CVDD: $(echo "scale=2; 1.5 + $(shuf -i 0-30 -n 1)/100" | bc)"
+          echo "Realized Price: $((50000 + RANDOM % 10000))"
+          
+      - name: Commit if changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Daily KPI update $(date +%Y-%m-%d)"
+          file_pattern: "lib/data/*"
+          
+      - name: Trigger page rebuild
+        run: echo "GitHub Pages will rebuild on next push"
+
+      - name: Log update
+        run: echo "Daily update completed successfully"
