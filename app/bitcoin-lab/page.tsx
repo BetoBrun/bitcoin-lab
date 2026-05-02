@@ -1,36 +1,26 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TabBar from "@/components/TabBar";
 import Scoreboard from "@/components/Scoreboard";
 import IndicatorCard from "@/components/IndicatorCard";
 import OverlayPanel from "@/components/OverlayPanel";
 import PriceLevelsChart from "@/components/PriceLevelsChart";
+import { generateMockData } from "@/lib/data/mock";
 import type { Indicator } from "@/lib/indicators/types";
 
 type Tab = "bottom" | "top" | "ta";
 
-interface ApiPayload {
-  btcPrice: number;
-  updatedAt: string;
-  priceHistory: { time: string; price: number }[];
-  ohlcHistory?: { time: string; open: number; high: number; low: number; close: number }[];
-  indicators?: Indicator[];
-}
+// Generate data at build time for static export
+const bottomData = generateMockData("bottom");
+const topData = generateMockData("top");
+const taData = generateMockData("ta");
 
 export default function BitcoinLabPage() {
   const [tab, setTab] = useState<Tab>("bottom");
-  const [data, setData] = useState<ApiPayload | null>(null);
 
-  useEffect(() => {
-    setData(null);
-    fetch(`/api/bitcoin-lab/${tab}`)
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData(null));
-  }, [tab]);
-
+  const data = tab === "top" ? topData : tab === "ta" ? taData : bottomData;
   const indicators = data?.indicators ?? [];
-  const activeCount = indicators.filter((i) => i.level !== "NORMAL").length;
+  const activeCount = indicators.filter((i: Indicator) => i.level !== "NORMAL").length;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -47,9 +37,9 @@ export default function BitcoinLabPage() {
 
       <TabBar tab={tab} onChange={setTab} />
 
-      {!data && <p className="text-muted text-sm">Loading…</p>}
+      <p className="text-muted text-xs">Updated: {data.updatedAt}</p>
 
-      {data && tab !== "ta" && (
+      {tab !== "ta" && (
         <>
           <Scoreboard
             kind={tab as "bottom" | "top"}
@@ -63,14 +53,14 @@ export default function BitcoinLabPage() {
             <OverlayPanel indicators={indicators} />
           </div>
           <div className="grid md:grid-cols-2 gap-4">
-            {indicators.map((ind) => (
+            {indicators.map((ind: Indicator) => (
               <IndicatorCard key={ind.id} indicator={ind} />
             ))}
           </div>
         </>
       )}
 
-      {data && tab === "ta" && (
+      {tab === "ta" && (
         <PriceLevelsChart
           history={data.priceHistory}
           ohlc={data.ohlcHistory}
