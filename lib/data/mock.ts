@@ -76,7 +76,7 @@ export function generateMockData(tab: "bottom" | "top" | "ta") {
   const snapshot = generateSnapshot();
   const btcPrice = snapshot.price;
   
-  const indicators: Indicator[] = computeIndicators(snapshot, tab);
+  const indicators: Indicator[] = computeIndicators(snapshot, tab === "ta" ? "bottom" : tab);
 
   return {
     btcPrice,
